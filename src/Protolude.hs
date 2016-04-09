@@ -3,8 +3,8 @@
 module Protolude (
   module X,
   identity,
-  bool,
   (&),
+  (P.$),
   uncons,
   applyN,
   print,
@@ -15,13 +15,13 @@ module Protolude (
 
 import qualified Prelude as P
 
-import qualified List as X
-import qualified Show as X
-import qualified Bool as X
-import qualified Debug as X
-import qualified Monad as X
-import qualified Functor as X
-import qualified Applicative as X
+import           List as X
+import           Show as X
+import           Bool as X
+import           Debug as X
+import           Monad as X
+import           Functor as X
+import           Applicative as X
 
 -- Maybe'ized version of partial functions
 import Safe as X (
@@ -250,9 +250,6 @@ infixl 1 &
 
 (&) :: a -> (a -> b) -> b
 x & f = f x
-
-bool :: a -> a -> Bool -> a
-bool f t b = if b then t else f
 
 identity :: a -> a
 identity x = x
