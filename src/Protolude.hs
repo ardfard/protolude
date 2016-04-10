@@ -1,10 +1,12 @@
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 module Protolude (
   module X,
   identity,
   (&),
-  (P.$),
+  ($!),
   uncons,
   applyN,
   print,
@@ -15,19 +17,33 @@ module Protolude (
 
 import qualified Prelude as P
 
-import           List as X
-import           Show as X
-import           Bool as X
-import           Debug as X
-import           Monad as X
-import           Functor as X
-import           Applicative as X
+import List as X
+import Show as X
+import Bool as X
+import Debug as X
+import Monad as X
+import Functor as X
+import Either as X
+import Applicative as X
 
 -- Maybe'ized version of partial functions
 import Safe as X (
     headMay
+  , headDef
   , initMay
+  , initDef
+  , initSafe
   , tailMay
+  , tailDef
+  , tailSafe
+  , lastDef
+  , lastMay
+  , lookupJust
+  , findJust
+  , foldr1May
+  , foldl1May
+  , atMay
+  , atDef
   )
 
 -- Applicatives
@@ -51,13 +67,15 @@ import Data.Traversable as X
 import Data.Foldable as X hiding (
     foldr1
   , foldl1
-  , maximum
-  , maximumBy
-  , minimum
-  , minimumBy
   )
 import Data.Semiring as X
 import Data.Functor.Identity as X
+
+#if (__GLASGOW_HASKELL__ >= 710)
+import Data.Bifunctor as X (Bifunctor(..))
+#else
+import Bifunctor as X (Bifunctor(..))
+#endif
 
 -- Deepseq
 import Control.DeepSeq as X (
@@ -69,6 +87,7 @@ import Control.DeepSeq as X (
 
 -- Data structures
 import Data.Tuple as X
+import Data.Semiring as X
 import Data.List as X (
     splitAt
   , break
@@ -78,6 +97,7 @@ import Data.List as X (
   , filter
   , reverse
   , replicate
+  , take
   )
 import Data.Map as X (Map)
 import Data.Set as X (Set)
@@ -139,9 +159,9 @@ import Data.Either as X
 import Data.Complex as X
 
 import Data.Function as X (
-    id
-  , const
+    const
   , (.)
+  , ($)
   , flip
   , fix
   , on
@@ -159,6 +179,11 @@ import GHC.Exts as X (
   , Ptr
   , FunPtr
   , the
+  )
+import GHC.Base as X (
+    (++)
+  , seq
+  , asTypeOf
   )
 
 -- Genericss
@@ -222,9 +247,9 @@ import Control.Monad.ST as ST
 
 -- Concurrency and Parallelism
 import Control.Exception as X
+import Control.Monad.STM as X
 import Control.Concurrent as X
 import Control.Concurrent.Async as X
-
 
 import Foreign.Storable as Exports (Storable)
 
@@ -245,6 +270,14 @@ infixl 1 &
 (&) :: a -> (a -> b) -> b
 x & f = f x
 
+infixr 0 $!
+
+($!) :: (a -> b) -> a -> b
+($!) = (P.$!)
+
+bool :: a -> a -> Bool -> a
+bool f t b = if b then t else f
+
 identity :: a -> a
 identity x = x
 
@@ -253,7 +286,7 @@ uncons []     = Nothing
 uncons (x:xs) = Just (x, xs)
 
 applyN :: Int -> (a -> a) -> a -> a
-applyN n f = X.foldr (.) id (X.replicate n f)
+applyN n f = X.foldr (.) identity (X.replicate n f)
 
 print :: (X.MonadIO m, P.Show a) => a -> m ()
 print = liftIO . P.print

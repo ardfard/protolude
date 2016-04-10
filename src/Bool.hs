@@ -1,13 +1,17 @@
-module Bool (
-    whenM
-  , unlessM
-  , ifM
-  , guardM
-  , bool
-  ) where
+{-# LANGUAGE Safe #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 
-import Prelude
-import Control.Monad (MonadPlus, when, unless, guard)
+module Bool (
+  whenM
+, unlessM
+, ifM
+, guardM
+, bool
+) where
+
+import Data.Bool (Bool)
+import Data.Function (flip)
+import Control.Monad (Monad, MonadPlus, when, unless, guard, (>>=), (=<<))
 
 bool :: a -> a -> Bool -> a
 bool f t p = if p then t else f
